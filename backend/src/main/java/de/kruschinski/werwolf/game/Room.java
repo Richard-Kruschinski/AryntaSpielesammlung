@@ -52,6 +52,7 @@ public class Room {
     private NobodyIsPerfectOptions nobodyIsPerfectOptions = NobodyIsPerfectOptions.DEFAULT;
     /** Nobody-is-Perfect-Fragen, die in diesem Raum schon dran waren. */
     private final List<String> usedQuestions = new ArrayList<>();
+    private boolean buzzerLockout = true;
     /** {@code null}, solange alle in der Lobby sind. */
     private Game game;
     private int nextPlayerNumber = 1;
@@ -295,6 +296,16 @@ public class Room {
         touch();
     }
 
+    public synchronized void configureBuzzer(String requesterId, boolean lockout) {
+        requireHost(requesterId);
+        requireLobby();
+        if (lockout != buzzerLockout) {
+            buzzerLockout = lockout;
+            resetReady();
+        }
+        touch();
+    }
+
     /** Jeder wählt sein Team selbst. Der Host darf auch andere verschieben ({@code targetId}). */
     public synchronized void chooseTeam(String requesterId, String targetId, int team) {
         require(requesterId);
@@ -327,6 +338,7 @@ public class Room {
             case IMPOSTOR -> newImpostorRound(1, random);
             case TABU -> new TabuGame(tabuTeams(random), tabuOptions, random);
             case NOBODY_IS_PERFECT -> newNobodyIsPerfect(random);
+            case BUZZER -> new BuzzerGame(playersExcept(hostId), buzzerLockout);
         };
         resetReady();
         touch();
@@ -364,6 +376,7 @@ public class Room {
             case TabuGame ignored -> new TabuGame(tabuTeams(random), tabuOptions, random);
             case NobodyIsPerfectGame ignored -> newNobodyIsPerfect(random);
             case WerwolfGame ignored -> throw new GameException("Das geht in diesem Spiel gerade nicht.");
+            case BuzzerGame ignored -> throw new GameException("Das geht in diesem Spiel gerade nicht.");
         };
         resetReady();
         touch();
@@ -401,6 +414,21 @@ public class Room {
                 NobodyIsPerfectQuestions.pick(nobodyIsPerfectOptions.questionCount(), usedQuestions, random);
         questions.forEach(q -> usedQuestions.add(q.question()));
         return new NobodyIsPerfectGame(List.copyOf(players.values()), questions, random);
+    }
+
+    // ---- Buzzer --------------------------------------------------------
+
+    public synchronized void pressBuzzer(String requesterId) {
+        require(requesterId);
+        requireGame(BuzzerGame.class).press(requesterId, clock.instant());
+        touch();
+    }
+
+    /** Spielleitung: Liste leeren, alle dürfen wieder drücken. */
+    public synchronized void releaseBuzzer(String requesterId) {
+        requireHost(requesterId);
+        requireGame(BuzzerGame.class).release();
+        touch();
     }
 
     // ---- Tabu ----------------------------------------------------
@@ -523,6 +551,7 @@ public class Room {
                 werwolfSettings,
                 tabuSettings,
                 new RoomView.NobodyIsPerfectSettings(nobodyIsPerfectOptions.questionCount()),
+                new RoomView.BuzzerSettings(buzzerLockout),
                 new RoomView.PlayerLimit(playerLimit, lowestPlayerLimit(), MAX_PLAYERS),
                 phase(),
                 round(),
@@ -534,7 +563,8 @@ public class Room {
                 game instanceof WerwolfGame werwolf ? werwolf.viewFor(me.id()) : null,
                 game instanceof ImpostorGame impostor ? impostor.viewFor(me.id()) : null,
                 game instanceof TabuGame tabu ? tabu.viewFor(me.id(), clock.instant()) : null,
-                game instanceof NobodyIsPerfectGame nobodyIsPerfect ? nobodyIsPerfect.viewFor(me.id()) : null);
+                game instanceof NobodyIsPerfectGame nobodyIsPerfect ? nobodyIsPerfect.viewFor(me.id()) : null,
+                game instanceof BuzzerGame buzzer ? buzzer.viewFor(me.id(), isHost) : null);
     }
 
     // ---- Hilfsmethoden -------------------------------------------------
@@ -553,7 +583,7 @@ public class Room {
             case WERWOLF -> RoleDistribution.problem(playing, werewolfCount, werwolfRoles);
             case IMPOSTOR -> impostorOptions.problem(playing);
             case TABU -> tabuProblem();
-            case NOBODY_IS_PERFECT -> null;
+            case NOBODY_IS_PERFECT, BUZZER -> null;
         };
         if (settingsProblem != null) {
             return settingsProblem;
@@ -573,11 +603,12 @@ public class Room {
         return tabuOptions.problem(players.size(), sizes, unassigned);
     }
 
-    /** Spielt der Host diesmal nicht mit, weil er ein eigenes Wort gewählt hat oder Werwolf leitet? */
+    /** Spielt der Host diesmal nicht mit, weil er ein eigenes Wort gewählt hat, Werwolf leitet oder den Buzzer bedient? */
     private boolean hostSitsOut() {
         return switch (selectedGame) {
             case IMPOSTOR -> customWord != null;
             case WERWOLF -> werwolfHostIsGameMaster;
+            case BUZZER -> true;
             case TABU, NOBODY_IS_PERFECT -> false;
         };
     }

@@ -27,5 +27,9 @@ public enum Phase {
     /** Alle Antworten stehen zur Wahl, jeder tippt auf die echte. */
     GUESSING,
     /** Auflösung einer Frage. Nach der letzten Frage kommt stattdessen RESULT. */
-    REVEAL
+    REVEAL,
+
+    // Buzzer
+    /** Die Spieler drücken, die Spielleitung gibt wieder frei. */
+    BUZZER
 }

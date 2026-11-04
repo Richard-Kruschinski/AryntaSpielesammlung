@@ -36,6 +36,7 @@ import {
 } from "./sharedViews";
 import { viewTeamChoice, viewTabu } from "./onlineTabu";
 import { viewNobodyIsPerfect } from "./onlineNobodyIsPerfect";
+import { viewBuzzer, viewBuzzerSettings } from "./onlineBuzzer";
 import type { GameType, ImpostorView, PlayerView, RoomView, ServerMessage, WerwolfView } from "./types";
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "ws://localhost:8080/ws";
@@ -270,6 +271,9 @@ function act(action: string, value?: string): void {
     case "nextQuestion":
       sendOrComplain({ type: "nextQuestion" });
       break;
+    case "releaseBuzzer":
+      sendOrComplain({ type: "releaseBuzzer" });
+      break;
     case "nextRound":
       sendOrComplain({ type: "nextRound" });
       break;
@@ -446,6 +450,8 @@ function render(): void {
     body = viewTabu(room, room.tabu, state.turnDeadline, viewReadyButton(room));
   } else if (room.nobodyIsPerfect) {
     body = viewNobodyIsPerfect(room, room.nobodyIsPerfect, state.answerDraft, viewReadyButton(room));
+  } else if (room.buzzer) {
+    body = viewBuzzer(room, room.buzzer);
   } else if (room.impostor) {
     body = viewImpostor(room, room.impostor);
   } else {
@@ -629,6 +635,8 @@ function viewSettings(room: RoomView): string {
   } else if (room.game === "NOBODY_IS_PERFECT") {
     const form = room.nobodyIsPerfectSettings;
     gameSettings = room.you.host ? viewNobodyIsPerfectOptions(form) : viewSummary(nobodyIsPerfectSummary(form));
+  } else if (room.game === "BUZZER") {
+    gameSettings = viewBuzzerSettings(room.buzzerSettings, room.you.host);
   } else {
     const form = werwolfForm(room);
     gameSettings = room.you.host ? viewWerwolfOptions(form) : viewSummary(werwolfSummary(form));
@@ -1000,6 +1008,7 @@ app.addEventListener("change", (event) => {
   if (input.dataset.setting === "randomStart") setImpostorOptions({ randomStartPlayer: input.checked });
   if (input.dataset.setting === "gameMaster") configureWerwolf({ hostIsGameMaster: input.checked });
   if (input.dataset.setting === "autoTeams") configureTabu({ autoTeams: input.checked });
+  if (input.dataset.setting === "buzzerLockout") sendOrComplain({ type: "configureBuzzer", lockout: input.checked });
   if (input.dataset.role !== undefined) {
     const roles = [...app.querySelectorAll<HTMLInputElement>("[data-role]")]
       .filter((box) => box.checked)
@@ -1021,6 +1030,10 @@ app.addEventListener("keydown", (event) => {
   if (event.key === "Enter" && input.id === "custom-word") act("saveWord");
   if (event.key === "Enter" && input.id === "answer") act("submitAnswer");
   if (event.key === "Enter" && input.id === "local-answer") act("localSubmitAnswer");
+  if ((event.key === " " || event.key === "Enter") && input.matches("[data-buzzer]:enabled") && !event.repeat) {
+    event.preventDefault();
+    sendOrComplain({ type: "pressBuzzer" });
+  }
   if ((event.key === " " || event.key === "Enter") && input.hasAttribute("data-reveal") && !event.repeat) {
     event.preventDefault();
     setRevealing(true);
@@ -1029,6 +1042,11 @@ app.addEventListener("keydown", (event) => {
 
 app.addEventListener("keyup", (event) => {
   if (event.key === " " || event.key === "Enter") setRevealing(false);
+});
+
+// Der Buzzer zählt schon beim Antippen, nicht erst beim Loslassen: Es geht um Millisekunden
+app.addEventListener("pointerdown", (event) => {
+  if ((event.target as HTMLElement).closest("[data-buzzer]:enabled")) sendOrComplain({ type: "pressBuzzer" });
 });
 
 // Karte nur aufdecken, solange der Finger darauf liegt

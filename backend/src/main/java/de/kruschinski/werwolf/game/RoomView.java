@@ -7,7 +7,7 @@ import java.util.List;
  * Das, was ein bestimmter Spieler vom Raum sehen darf.
  * Jeder Spieler bekommt seine eigene Ansicht, damit Rollen und Wörter geheim bleiben.
  *
- * <p>{@code werwolf}, {@code impostor}, {@code tabu} bzw. {@code nobodyIsPerfect} ist nur gefüllt, solange das jeweilige Spiel läuft.
+ * <p>{@code werwolf}, {@code impostor}, {@code tabu}, {@code nobodyIsPerfect} bzw. {@code buzzer} ist nur gefüllt, solange das jeweilige Spiel läuft.
  */
 public record RoomView(
         String code,
@@ -17,6 +17,7 @@ public record RoomView(
         WerwolfSettings werwolfSettings,
         TabuSettings tabuSettings,
         NobodyIsPerfectSettings nobodyIsPerfectSettings,
+        BuzzerSettings buzzerSettings,
         PlayerLimit playerLimit,
         Phase phase,
         int round,
@@ -28,7 +29,8 @@ public record RoomView(
         WerwolfView werwolf,
         ImpostorView impostor,
         TabuView tabu,
-        NobodyIsPerfectView nobodyIsPerfect
+        NobodyIsPerfectView nobodyIsPerfect,
+        BuzzerView buzzer
 ) {
 
     /** Öffentliche Infos über einen Mitspieler (ohne Rolle!). */
@@ -139,6 +141,17 @@ public record RoomView(
             List<NobodyIsPerfectReveal> reveal,
             List<NobodyIsPerfectScore> scores
     ) {
+    }
+
+    public record BuzzerSettings(boolean lockout) {
+    }
+
+    /** {@code offsetMs}: wie viel später als der Erste gedrückt wurde. */
+    public record BuzzerPress(String playerId, int rank, long offsetMs) {
+    }
+
+    /** Die ganze Reihenfolge ({@code presses}) sieht nur die Spielleitung, Spieler nur ihren Platz. */
+    public record BuzzerView(boolean lockout, List<BuzzerPress> presses, Integer yourRank, boolean canPress) {
     }
 
     /** Aktuelles Limit und in welchem Bereich der Host es gerade einstellen darf. */

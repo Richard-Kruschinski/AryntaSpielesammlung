@@ -37,7 +37,7 @@ export const THIEF_EXTRA_CARDS = 2;
 
 // Gleiche Werte wie im Backend (GameType, Room, ImpostorOptions)
 export const MAX_PLAYERS = 20;
-export const MIN_PLAYERS = { WERWOLF: 4, IMPOSTOR: 3, TABU: 4, NOBODY_IS_PERFECT: 3 } as const;
+export const MIN_PLAYERS = { WERWOLF: 4, IMPOSTOR: 3, TABU: 4, NOBODY_IS_PERFECT: 3, BUZZER: 2 } as const;
 export const MAX_IMPOSTORS = MAX_PLAYERS / 2 - 1;
 
 // Gleiche Werte wie im Backend (TabuOptions, TabuGame)

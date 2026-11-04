@@ -1152,3 +1152,74 @@ body[data-phase="day"] .role-overview li.role-team-dorf .player-note {
   outline: 3px solid var(--accent);
   outline-offset: 2px;
 }
+
+/* ---- Buzzer ---------------------------------------------------------- */
+
+.buzzer-button {
+  display: block;
+  width: min(80vw, 18rem);
+  aspect-ratio: 1;
+  margin: 1.5rem auto 1rem;
+  border-radius: 50%;
+  border: 6px solid #d3463d;
+  background: #b3261e;
+  box-shadow: 0 0.6rem 0 #6e1712;
+  color: #fff;
+  font: inherit;
+  font-size: 2.5rem;
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.buzzer-button:active:enabled {
+  transform: translateY(0.4rem);
+  box-shadow: 0 0.2rem 0 #6e1712;
+}
+
+.buzzer-button:disabled {
+  background: var(--surface);
+  border-color: var(--line);
+  box-shadow: none;
+  color: var(--muted);
+  cursor: default;
+}
+
+.buzzer-status {
+  margin-inline: auto;
+  text-align: center;
+}
+
+.buzzer-order {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.buzzer-order li {
+  display: grid;
+  grid-template-columns: 2.5rem 1fr auto;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  background: var(--surface);
+  font-size: 1.15rem;
+}
+
+.buzzer-order li:first-child {
+  border: 2px solid var(--accent);
+  font-size: 1.4rem;
+}
+
+.buzzer-rank {
+  font-weight: 700;
+}
+
+.buzzer-offset {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}

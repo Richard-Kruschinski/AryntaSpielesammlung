@@ -24,6 +24,8 @@ import java.util.List;
  *   <li>{@code submitAnswer}: answer</li>
  *   <li>{@code guessAnswer}: choice (Buchstabe der Antwort)</li>
  *   <li>{@code skipWaiting}, {@code nextQuestion}: keine Felder</li>
+ *   <li>{@code configureBuzzer}: lockout</li>
+ *   <li>{@code pressBuzzer}, {@code releaseBuzzer}: keine Felder</li>
  *   <li>{@code leave}, {@code start}, {@code nextPhase}, {@code startVoting}, {@code nextRound},
  *       {@code backToLobby}, {@code ping}: keine Felder</li>
  * </ul>
@@ -52,6 +54,7 @@ public record ClientMessage(
         Integer team,
         Integer questionCount,
         String answer,
-        String choice
+        String choice,
+        Boolean lockout
 ) {
 }

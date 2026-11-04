@@ -183,6 +183,10 @@ public class GameSocketHandler extends TextWebSocketHandler {
             case "guessAnswer" -> withRoom(session, (room, playerId) -> room.guessAnswer(playerId, msg.choice()));
             case "skipWaiting" -> withRoom(session, Room::skipWaiting);
             case "nextQuestion" -> withRoom(session, Room::nextQuestion);
+            case "configureBuzzer" -> withRoom(session,
+                    (room, playerId) -> room.configureBuzzer(playerId, Boolean.TRUE.equals(msg.lockout())));
+            case "pressBuzzer" -> withRoom(session, Room::pressBuzzer);
+            case "releaseBuzzer" -> withRoom(session, Room::releaseBuzzer);
             case "setPlayerLimit" -> {
                 if (msg.playerLimit() == null) {
                     throw new GameException("Bitte gib ein Spielerlimit an.");

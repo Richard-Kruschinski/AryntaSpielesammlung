@@ -1,7 +1,7 @@
 // Spiegelt die Java-Klassen im Backend (RoomView, GameType, Phase).
 
-export type GameType = "WERWOLF" | "IMPOSTOR" | "TABU" | "NOBODY_IS_PERFECT";
-export type Phase = "LOBBY" | "NIGHT" | "DAY" | "WORD" | "VOTING" | "RESULT" | "TURN_READY" | "TURN" | "WRITING" | "GUESSING" | "REVEAL";
+export type GameType = "WERWOLF" | "IMPOSTOR" | "TABU" | "NOBODY_IS_PERFECT" | "BUZZER";
+export type Phase = "LOBBY" | "NIGHT" | "DAY" | "WORD" | "VOTING" | "RESULT" | "TURN_READY" | "TURN" | "WRITING" | "GUESSING" | "REVEAL" | "BUZZER";
 export type ImpostorPart = "CREW" | "IMPOSTOR" | "GAME_MASTER";
 
 export interface PlayerView {
@@ -136,6 +136,25 @@ export interface NobodyIsPerfectView {
   scores: NobodyIsPerfectScore[];
 }
 
+export interface BuzzerSettings {
+  lockout: boolean;
+}
+
+export interface BuzzerPress {
+  playerId: string;
+  rank: number;
+  /** Wie viel später als der Erste gedrückt wurde. */
+  offsetMs: number;
+}
+
+/** presses (die ganze Reihenfolge) sieht nur die Spielleitung. */
+export interface BuzzerView {
+  lockout: boolean;
+  presses: BuzzerPress[];
+  yourRank: number | null;
+  canPress: boolean;
+}
+
 export interface PlayerLimit {
   value: number;
   /** Kleinster Wert, den der Host gerade einstellen darf. */
@@ -202,6 +221,7 @@ export interface RoomView {
   werwolfSettings: WerwolfSettings;
   tabuSettings: TabuSettings;
   nobodyIsPerfectSettings: NobodyIsPerfectSettings;
+  buzzerSettings: BuzzerSettings;
   playerLimit: PlayerLimit;
   phase: Phase;
   round: number;
@@ -214,6 +234,7 @@ export interface RoomView {
   impostor: ImpostorView | null;
   tabu: TabuView | null;
   nobodyIsPerfect: NobodyIsPerfectView | null;
+  buzzer: BuzzerView | null;
 }
 
 /** Was der Server schickt. */
@@ -254,6 +275,9 @@ export type ClientMessage =
   | { type: "guessAnswer"; choice: string }
   | { type: "skipWaiting" }
   | { type: "nextQuestion" }
+  | { type: "configureBuzzer"; lockout: boolean }
+  | { type: "pressBuzzer" }
+  | { type: "releaseBuzzer" }
   | { type: "nextRound" }
   | { type: "backToLobby" }
   | { type: "ping" };
