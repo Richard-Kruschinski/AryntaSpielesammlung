@@ -8,6 +8,8 @@ services:
     rootDir: backend
     dockerfilePath: ./Dockerfile
     healthCheckPath: /health
+    # Erst deployen, wenn die Tests auf GitHub grün sind (.github/workflows/tests.yml)
+    autoDeployTrigger: checksPass
     envVars:
       # Nach dem ersten Deploy des Frontends hier dessen Adresse eintragen,
       # z. B. https://werwolf.pages.dev (mehrere kommagetrennt)
