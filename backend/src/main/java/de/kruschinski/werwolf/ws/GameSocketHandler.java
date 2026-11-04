@@ -5,6 +5,7 @@ import de.kruschinski.werwolf.game.GameType;
 import de.kruschinski.werwolf.game.Player;
 import de.kruschinski.werwolf.game.Room;
 import de.kruschinski.werwolf.game.RoomRegistry;
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.TaskScheduler;
@@ -56,13 +57,13 @@ public class GameSocketHandler extends TextWebSocketHandler {
     }
 
     @Override
-    public void afterConnectionEstablished(WebSocketSession session) {
+    public void afterConnectionEstablished(@NonNull WebSocketSession session) {
         // Der Decorator sorgt dafür, dass zwei Threads nicht gleichzeitig in dieselbe Verbindung schreiben
         sessions.put(session.getId(), new ConcurrentWebSocketSessionDecorator(session, 5_000, 64 * 1024));
     }
 
     @Override
-    protected void handleTextMessage(WebSocketSession rawSession, TextMessage message) {
+    protected void handleTextMessage(@NonNull WebSocketSession rawSession, @NonNull TextMessage message) {
         WebSocketSession session = sessions.getOrDefault(rawSession.getId(), rawSession);
         ClientMessage msg = parse(message);
         if (msg == null) {
@@ -209,8 +210,10 @@ public class GameSocketHandler extends TextWebSocketHandler {
         }
     }
 
+    // Die Verbindung ist hier schon zu, die entfernten Sessions muss niemand mehr schließen
+    @SuppressWarnings("resource")
     @Override
-    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
+    public void afterConnectionClosed(@NonNull WebSocketSession session, @NonNull CloseStatus status) {
         sessions.remove(session.getId());
         Seat seat = seatsBySession.remove(session.getId());
         if (seat == null) {

@@ -967,6 +967,8 @@ function viewPlayerItem(room: RoomView, p: PlayerView, options: PlayerListOption
     </li>`;
 }
 
+// Die Links zeigen auf Seiten neben index.html, nicht neben dieser Datei
+// noinspection HtmlUnknownTarget
 function viewFooter(): string {
   return `
     <footer class="site-footer">

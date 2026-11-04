@@ -6,6 +6,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -261,7 +262,7 @@ public class Room {
             throw new GameException("Bitte wähle mindestens eine Kategorie.");
         }
         List<String> known = ImpostorWords.categoryNames();
-        if (!known.containsAll(categories)) {
+        if (!new HashSet<>(known).containsAll(categories)) {
             throw new GameException("Diese Kategorie gibt es nicht.");
         }
         List<String> selected = known.stream().filter(categories::contains).toList();
